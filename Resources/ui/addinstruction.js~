@@ -1,0 +1,148 @@
+//*********************************************************
+// Home School Tracker
+// addinstruction.js
+// add an instruction - called from studentdetail.js
+//*********************************************************
+(function(){
+
+	hs.ui.createaddinstructionview = function(studentid) {
+		var i;
+
+		var v = Ti.UI.createView({
+			backgroundImage:hs.ui.bg,
+			studentid:studentid
+		});
+
+		var toplabel = Ti.UI.createLabel({
+			text:'Add Instruction Time',
+			color:hs.ui.color,
+			font:{fontSize:hs.ui.fontsize},
+			top:'10dp',
+			left:'5dp'
+		});
+
+		var subjectlabel = Ti.UI.createLabel({
+			text:'Subject:',
+			color:hs.ui.color,
+			font:{fontSize:hs.ui.fontsize},
+			top:'55dp',
+			left:'5dp'
+		});
+
+		var data = [];
+		var subjects = hs.db.loadsubjects();
+		for(i=0;i<subjects.length;i++) {
+			data[i] = Ti.UI.createPickerRow({
+				title:subjects[i].name,
+				subjectid:subjects[i].id
+			});
+		};
+
+		var subjectpicker = Ti.UI.createPicker({
+			top:'50dp',
+			right:'80dp'
+		});
+		subjectpicker.add(data);
+
+		var datelabel = Ti.UI.createLabel({
+			text:'Date:',
+			color:hs.ui.color,
+			font:{fontSize:hs.ui.fontsize},
+			top:'151dp',
+			left:'4dp'
+		});
+
+		var pickeddate = new Date();
+		var datepicker = Ti.UI.createPicker({
+			top:'105dp',
+			right:'0dp',
+			value:pickeddate,
+			type:Ti.UI.PICKER_TYPE_DATE
+		});
+		datepicker.addEventListener('click',function(e) {
+			pickeddate=e.value;
+		});
+
+		var timelabel = Ti.UI.createLabel({
+			text:'Time:',
+			color:hs.ui.color,
+			font:{fontSize:hs.ui.fontsize},
+			top:'290dp',
+			left:'5dp'
+		});
+
+		var pickedtime = new Date();
+		var timepicker = Ti.UI.createPicker({
+			top:'240dp',
+			right:'5dp',
+			value:pickedtime,
+			type:Ti.UI.PICKER_TYPE_TIME
+		});
+		timepicker.addEventListener('click',function(e) {
+			pickedtime=e.value;
+		});
+
+		var durationlabel = Ti.UI.createLabel({
+			text:'Duration:',
+			color:hs.ui.color,
+			font:{fontSize:hs.ui.fontsize},
+			top:'380dp',
+			left:'5dp'
+		});
+
+		var duration = [];
+		duration[0] = Ti.UI.createPickerRow({title:15});
+		duration[1] = Ti.UI.createPickerRow({title:30});
+		duration[2] = Ti.UI.createPickerRow({title:45});
+		duration[3] = Ti.UI.createPickerRow({title:60});
+		var durationpicker = Ti.UI.createPicker({
+			top:'375dp',
+			right:'80dp'
+		});
+		durationpicker.add(duration);
+
+		var cancelbutton = Ti.UI.createButton({
+			top:'420dp',
+			left:'20dp',
+			height:'50dp',
+			width:'100dp',
+			title:'Cancel'
+		});
+		cancelbutton.addEventListener('click',function() {
+			hs.app.mainwindow.remove(hs.app.viewstack.pop());
+		});
+
+		var addbutton = Ti.UI.createButton({
+			top:'420dp',
+			right:'20dp',
+			height:'50dp',
+			width:'100dp',
+			title:'Add'
+		});
+		addbutton.addEventListener('click',function() {
+			var datetime = new Date();
+			datetime.setTime(pickedtime.getTime());
+			datetime.setFullYear(pickeddate.getFullYear());
+			datetime.setMonth(pickeddate.getMonth());
+			datetime.setDate(pickeddate.getDate());
+			hs.db.addinstruction(studentid,subjectpicker.getSelectedRow(0).subjectid,
+				datetime,durationpicker.getSelectedRow(0).title);
+			hs.app.mainwindow.remove(hs.app.viewstack.pop());
+		});
+
+		v.add(toplabel);
+		v.add(subjectlabel);
+		v.add(subjectpicker);
+		v.add(datelabel);
+		v.add(datepicker);
+		v.add(timelabel);
+		v.add(timepicker);
+		v.add(durationlabel);
+		v.add(durationpicker);
+		v.add(cancelbutton);
+		v.add(addbutton); 
+
+		return(v);
+	};
+	
+})();

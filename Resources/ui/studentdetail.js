@@ -1,0 +1,124 @@
+//*************************************************
+// Home School Tracker
+// studentdetail.js
+// student detail screen
+//*************************************************
+
+(function () {
+	/*
+	 * function - createstudentdetailrows
+	 */
+	hs.ui.createstudentdetailrows = function(studentid) {
+		var r = [];
+		var l = [];
+		var i = 0;
+
+		var instructions = hs.db.loadinstructions(studentid);
+
+		if(instructions.length == 0) {		// no instructions
+			l[0] = Ti.UI.createLabel({		// make a dummy label...
+				color:hs.ui.color,
+				left:'10dp',
+				text:'No Instruction',
+				font:{fontSize:hs.ui.fontsize}
+			});
+			r[0] = Ti.UI.createTableViewRow({});		// make a dummy row....
+			r[0].add(l[0]);		//  add dummy label to dummy row
+		} else {		// there are instructions
+			for(i=0;i<instructions.length;i++){
+				l[i]=Ti.UI.createLabel({
+					color:hs.ui.color,
+					left:'10dp',
+					text:instructions[i].subjectname,
+					font:{fontSize:hs.ui.fontsize}
+				});
+				r[i]=Ti.UI.createTableViewRow({
+					hasChild:true,
+					className:'studentrow',
+					height:'75dp',
+					studentid:studentid,
+					instructionid:instructions[i].id
+				});
+				r[i].add(l[i]);
+			};
+		};
+
+		return(r);
+	}
+
+	/*
+	 * function - createstudentdetailview
+	 */
+	hs.ui.createstudentdetailview = function(studentid) {
+		var detailview = Ti.UI.createView({
+			backgroundImage:hs.ui.bg
+		});
+
+		var namelabel = Ti.UI.createLabel({
+			color:hs.ui.color,
+			font:{fontSize:hs.ui.fontsize},
+			top:'20dp',
+			left:'5dp',
+			textAlign:'left',
+			text:hs.db.getstudentname(studentid)
+		});
+
+		var deletebutton = Ti.UI.createButton({
+			top:'7dp',
+			right:'5dp',
+			height:'60dp',
+			title:'Delete',
+			studentid:studentid
+		});
+
+		deletebutton.addEventListener('click',function(e) {
+			hs.db.deletestudent(e.source.studentid);
+			hs.app.mainwindow.remove(hs.app.viewstack.pop());
+		});
+
+		var addbutton = Ti.UI.createButton({
+			top:'70dp',
+			height:'60dp',
+			width:'100%',
+			title:'Add Instruction',
+			studentid:studentid
+		});
+
+		addbutton.addEventListener('click',function(e) {
+			var v = hs.ui.createaddinstructionview(e.source.studentid);
+			hs.app.mainwindow.add(v);
+			hs.app.viewstack.push(v);
+		});
+
+		var r = hs.ui.createstudentdetailrows(studentid);
+
+		var tableview = Ti.UI.createTableView({
+			headerTitle:'Instructions',
+			top:'130dp',
+			left:'0dp',
+			data:r
+		});
+
+		tableview.addEventListener('click',function(e) {
+			if(instructions.length == 0) {
+				return;
+			}
+			var v = hs.ui.createinstructiondetailview(e.rowData.instructionid);
+			hs.app.mainwindow.add(v);
+			hs.app.viewstack.push(v);
+		});
+
+		Ti.App.addEventListener('app:instructionchange',function() {
+			var r = hs.ui.createstudentdetailrows(studentid);
+			tableview.data = r;
+		});
+
+		detailview.add(namelabel);
+		detailview.add(deletebutton);
+		detailview.add(addbutton);
+		detailview.add(tableview);
+
+		return(detailview);
+	};
+	
+})();
